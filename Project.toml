@@ -1,0 +1,13 @@
+name = "BayesianCoaddition"
+uuid = "0cef3c73-0c37-4a92-8955-18337cb3fc10"
+authors = ["Dylan Green"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1.8.5"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
