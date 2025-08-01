@@ -22,6 +22,21 @@ function construct_likelihood(flux, ivar, psf_mat)
     return CoaddLikelihood(A, phi, 1, psf_mat, ivar)
 end
 
+"""
+    get_bayes_coadd(likelihood::CoaddLikelihood; regularize::Bool=false)
+
+Gets the Bayesian coadd from the coadded likelihood, optionally using regularization.
+
+The Bayesian coadd without regularization is equivalent to the maximum likelihood
+estimate of the true object scene defined by the likelihood.
+The Bayesian coadd with regularization is the maximum a-priori estimate of the
+true object scene defined by the likelihood and the prior defined by the
+hyperparameter ``σ_f``.
+
+# Arguments
+- `likelihood`: The accumulated coadd likelihood.
+- `regularize`: Whether or not to return the regularized coadd or not.
+"""
 function get_bayes_coadd(likelihood::CoaddLikelihood; regularize::Bool=false)
     if regularize
         sigma_f_matrix = diagm(ones(length(likelihood.phi)) .* (likelihood.sigma_f^-2))
@@ -32,6 +47,18 @@ function get_bayes_coadd(likelihood::CoaddLikelihood; regularize::Bool=false)
     end
 end
 
+"""
+    accumulate_exposure(likelihood::CoaddLikelihood, flux, ivar, psf_mat)
+
+Add an exposure into the accumulated likelihood using the point spread function (PSF),
+exposure flux and exposure inverse variance.
+
+# Arguments
+- `likelihood`: The accumulated coadd likelihood to add the exposure to.
+- `flux`: Exposure flux as a vector.
+- `ivar`: Exposure ivar as a vector.
+- `psf_mat`: Matrix of PSF function for the exposure, where each row is the PSF of the associated pixel in the flux/ivar grid.
+"""
 function accumulate_exposure(likelihood::CoaddLikelihood, flux, ivar, psf_mat)
     likelihood.A += psf_mat * diagm(ivar) * psf_mat'
     likelihood.phi += psf_mat * (flux .* ivar)
