@@ -22,7 +22,7 @@ Once all exposures have been accumulated you **must** update the coadd's propert
 There are three ways to do this:
 1. `update_sigma_f(likelihood, method="approx")`: Uses the accumulated likelihood to find the most probable $\sigma_f$ to regularize the Bayesian coadd. `method` controls whether to use the fast approximation algorithm outlined in the thesis (`approx`) or an exact root finder (`exact`).
 2. `update_recon_props(likelihood)`: Uses the summary statistics to generate the "coadd PSF" and the associated reconvolved inverse variance.
-3. `update_coadd_props(likelihood, sigma_f_method="approx")`. Combines both of the aforementinog functions into one single function call.
+3. `update_coadd_props(likelihood, sigma_f_method="approx")`. Combines both of the aforementioned functions into one single function call.
 
 In general `update_coadd_props(likelihood, sigma_f_method="approx")` is satisfactory for most uses. `update_sigma_f` and `update_recon_props` are provided as convenience functions for users who know which coadd they want to produce and want to generate the coadd as fast as possible (i.e. without updating the properties they won't use).
 
