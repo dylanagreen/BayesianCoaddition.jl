@@ -34,5 +34,5 @@ function accumulate_exposure(likelihood::CoaddLikelihood, flux, ivar, psf_mat)
 end
 
 
-include("approximation.jl")
+include("sigma_f.jl")
 end
