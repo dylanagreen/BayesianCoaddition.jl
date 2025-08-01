@@ -1,6 +1,7 @@
 module BayesianCoaddition
 using LinearAlgebra
 using SparseArrays
+using Roots
 
 export CoaddLikelihood, accumulate_exposure, get_bayes_coadd, construct_likelihood
 export update_sigma_f

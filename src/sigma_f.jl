@@ -63,15 +63,26 @@ function approximate_sigma_f(likelihood::CoaddLikelihood; n_iter::Int=2, n_point
       vertex = fit_and_find_vertex(sigma_vals_full, S_vals)
   end
 
-  # return vertex
-  # Update the sufficient likelihood.
   return vertex
 end
 
-function update_sigma_f(likelihood::CoaddLikelihood)
-    # TODO functionality for exact calculation if likelihood params are small enough
-    new_sigma_f = approximate_sigma_f(likelihood)
+function exact_sigma_f(likelihood::CoaddLikelihood)
+    g(x) = dlog_S(likelihood, x)
+    return find_zero(g, 0.2)
+end
 
-    likelihood.sigma_f = new_sigma_f;
+function update_sigma_f(likelihood::CoaddLikelihood, method="approx")
+
+    if method == "approx"
+        new_sigma_f = approximate_sigma_f(likelihood)
+    elseif method == "exact"
+        new_sigma_f = exact_sigma_f(likelihood)
+    else
+        # Does nothing right now but
+        # TODO functionality for auto choose which to use
+        new_sigma_f = likelihood.sigma_f
+    end
+
+    likelihood.sigma_f = new_sigma_f
 end
 
