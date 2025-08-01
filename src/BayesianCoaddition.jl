@@ -1,10 +1,9 @@
 module BayesianCoaddition
 using LinearAlgebra
+using SparseArrays
 
 export CoaddLikelihood, accumulate_exposure, get_bayes_coadd, construct_likelihood
-# export approximate_sigma_f
-
-# include("approximation.jl")
+export update_sigma_f
 
 mutable struct CoaddLikelihood
     A
@@ -19,10 +18,14 @@ function construct_likelihood(flux, ivar, psf_mat)
     return CoaddLikelihood(A, phi, 1)
 end
 
-function get_bayes_coadd(likelihood::CoaddLikelihood)
-    sigma_f_matrix = diagm(ones(length(likelihood.phi)) .* (likelihood.sigma_f^-2))
-    A_prior = sparse(likelihood.A .+ sigma_f_matrix)
-    return A_prior \ likelihood.phi
+function get_bayes_coadd(likelihood::CoaddLikelihood; regularize::Bool=false)
+    if regularize
+        sigma_f_matrix = diagm(ones(length(likelihood.phi)) .* (likelihood.sigma_f^-2))
+        A_prior = sparse(likelihood.A .+ sigma_f_matrix)
+        return A_prior \ likelihood.phi
+    else
+        return likelihood.A \ likelihood.phi
+    end
 end
 
 function accumulate_exposure(likelihood::CoaddLikelihood, flux, ivar, psf_mat)
@@ -31,5 +34,5 @@ function accumulate_exposure(likelihood::CoaddLikelihood, flux, ivar, psf_mat)
 end
 
 
-
+include("approximation.jl")
 end

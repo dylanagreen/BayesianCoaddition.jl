@@ -1,17 +1,19 @@
+# include("BayesianCoaddition.jl")
 # Named this S because it actually comes from the "scaling gaussian"
 # that results when multiplying two gaussians (the prior and the likelihood)
-function log_S(stats::SufficientStats, sigma_f)
-  sigma_f_matrix = diagm(ones(length(stats.phi)) .* (sigma_f^-2))
-  A_prior = sparse(stats.A .+ sigma_f_matrix)
-  return -logdet(A_prior) * 0.5 - length(stats.phi) * log(sigma_f) + 0.5 * stats.phi' * (A_prior \ stats.phi)
+function log_S(likelihood::CoaddLikelihood, sigma_f)
+  sigma_f_matrix = diagm(ones(length(likelihood.phi)) .* (sigma_f^-2))
+  A_prior = sparse(likelihood.A .+ sigma_f_matrix)
+  return -logdet(A_prior) * 0.5 - length(likelihood.phi) * log(sigma_f) + 0.5 * likelihood.phi' * (A_prior \ likelihood.phi)
 end
 
-# function dlog_S(A, phi, sigma_f)
-#   sigma_f_matrix = diagm(ones(length(phi)) .* (sigma_f^-2))
-#   A_prior = Symmetric(A .+ sigma_f_matrix)
-#   f_bar = A_prior \ phi
-#   return (sigma_f^-2) * (tr(inv(A_prior)) + (f_bar' * f_bar)) - length(phi)
-# end
+# Used for exact root finding.
+function dlog_S(likelihood::CoaddLikelihood, sigma_f)
+    sigma_f_matrix = diagm(ones(length(likelihood.phi)) .* (sigma_f^-2))
+    A_prior = Symmetric(likelihood.A .+ sigma_f_matrix)
+    f_bar = A_prior \ likelihood.phi
+    return (sigma_f^-2) * (tr(inv(A_prior)) + (f_bar' * f_bar)) - length(likelihood.phi)
+end
 
 function fit_and_find_vertex(sigma_vals, S_vals)
     # Finds the rough estimate of the vertex from the coarse evaluations we did
@@ -39,13 +41,13 @@ function fit_and_find_vertex(sigma_vals, S_vals)
 end
 
 
-function approximate_sigma_f(stas::SufficientStats; n_iter::Int=2, n_points::Int=15)
+function approximate_sigma_f(likelihood::CoaddLikelihood; n_iter::Int=2, n_points::Int=15)
   # Initial scan
   sigma_vals_full = Vector(range(0.05, 1, n_points))
   S_vals = Vector{Float64}()
 
   for sig in sigma_vals_full
-      S = log_S(stats, sig, false)
+      S = log_S(likelihood, sig)
       append!(S_vals, S)
   end
 
@@ -56,21 +58,20 @@ function approximate_sigma_f(stas::SufficientStats; n_iter::Int=2, n_points::Int
       # Inserts the estimated vertex and its log_s value
       # into the arrays for the next pass
       splice!(sigma_vals_full, insert_idx_log, vertex)
-      splice!(S_vals, insert_idx_log, log_S(stats, vertex))
+      splice!(S_vals, insert_idx_log, log_S(likelihood, vertex))
 
       vertex = fit_and_find_vertex(sigma_vals_full, S_vals)
   end
 
   # return vertex
-  # Update the sufficient stats.
-  stats.sigma_f = vertex
+  # Update the sufficient likelihood.
+  return vertex
 end
 
-# function get_bayes_coadd(A, phi, sigma_f)
-#   sigma_f_matrix = diagm(ones(length(phi)) .* (sigma_f^-2))
-#   A_prior = sparse(A .+ sigma_f_matrix)
-#   return A_prior \ phi
-# end
+function update_sigma_f(likelihood::CoaddLikelihood)
+    # TODO functionality for exact calculation if likelihood params are small enough
+    new_sigma_f = approximate_sigma_f(likelihood)
 
-
+    likelihood.sigma_f = new_sigma_f;
+end
 
