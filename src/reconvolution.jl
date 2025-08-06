@@ -1,4 +1,5 @@
-function res_decomp(A)
+
+function sqrt_decomp(A)
     v, P = eigen(A)
     # Generates the square root of inverse covariance matrix
     Q = P * diagm(sqrt.(v)) * transpose(P)
@@ -25,7 +26,7 @@ Updates internal properties of the likelihood related to the reconvolved coadd: 
 """
 function update_recon_props(likelihood::CoaddLikelihood)
     # Updating the PSF and the associated ivar for the reconvolved coadd
-    G, iv = res_decomp(likelihood.A)
+    G, iv = sqrt_decomp(likelihood.A)
     likelihood.coadd_psf = G
     likelihood.ivar = iv
 end
