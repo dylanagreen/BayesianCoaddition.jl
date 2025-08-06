@@ -1,4 +1,12 @@
+"""
+    sqrt_decomp(A)
 
+Decompose the inverse covariance matrix into a PSF-like matrix ``\\mathbf{G}_c``
+and a vector representing the diagonal inverse variance such that ``\\mathbf{A} = \\mathbf{G}_c^t \\textrm{diag(ivar)} \\mathbf{G}_c``.
+
+# Arguments
+- `A`: The inverse covariance matrix to be decomposed.
+"""
 function sqrt_decomp(A)
     v, P = eigen(A)
     # Generates the square root of inverse covariance matrix
@@ -19,7 +27,7 @@ end
 """
     update_recon_props(likelihood::CoaddLikelihood)
 
-Updates internal properties of the likelihood related to the reconvolved coadd: the diagonal inverse variance and the coadd PSF.
+Update internal properties of the likelihood related to the reconvolved coadd: the diagonal inverse variance and the coadd PSF.
 
 # Arguments
 - `likelihood`: The accumulated coadd likelihood
@@ -31,6 +39,14 @@ function update_recon_props(likelihood::CoaddLikelihood)
     likelihood.ivar = iv
 end
 
+"""
+    get_reconvolved_coadd(likelihood::CoaddLikelihood)
+
+Get the reconvolved coadd and its associated diagonal inverse variance defined by the likelihood.
+
+# Arguments
+- `likelihood`: The accumulated coadd likelihood
+"""
 function get_reconvolved_coadd(likelihood::CoaddLikelihood)
     return likelihood.coadd_psf * get_bayes_coadd(likelihood, regularize=false), likelihood.ivar
 end
