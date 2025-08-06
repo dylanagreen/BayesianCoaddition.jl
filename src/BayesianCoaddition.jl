@@ -15,7 +15,19 @@ mutable struct CoaddLikelihood
     ivar
 end
 
-# Should be used to generate a coadd likelihood struct from a single exposure.
+"""
+    construct_likelihood(flux, ivar, psf_mat)
+
+Construct a likelihood object from a single exposure's flux, ivar, and associated PSF.
+
+Although it is possible to construct a CoaddLikelihood manually, this conveience function
+wraps the entire process in a single step.
+
+# Arguments
+- `flux`: Exposure flux as a vector.
+- `ivar`: Exposure ivar as a vector.
+- `psf_mat`: Matrix of PSF function for the exposure, where each row is the PSF of the associated pixel in the flux/ivar grid.
+"""
 function construct_likelihood(flux, ivar, psf_mat)
     A = psf_mat * diagm(ivar) * psf_mat'
     phi = psf_mat * (flux .* ivar)
@@ -68,7 +80,18 @@ end
 include("sigma_f.jl")
 include("reconvolution.jl")
 
-function update_coadd_props(likelihood::CoaddLikelihood, sigma_f_method="approx")
+"""
+    update_coadd_props(likelihood::CoaddLikelihood, sigma_f_method::String="approx")
+
+Updates all internal properties of the likelihood related to coaddition including ``σ_f``, the diagonal inverse variance, and the coadd PSF.
+
+See also [`update_sigma_f`](@ref), [`update_recon_props`](@ref)
+
+# Arguments
+- `likelihood`: The accumulated coadd likelihood
+- `sigma_f_method`: Method used to update ``σ_f``. Choices are "approx" to use the fast approximation algorithm or "exact" to use a root finding method.
+"""
+function update_coadd_props(likelihood::CoaddLikelihood, sigma_f_method::String="approx")
     update_recon_props(likelihood)
     update_sigma_f(likelihood, sigma_f_method)
 end
