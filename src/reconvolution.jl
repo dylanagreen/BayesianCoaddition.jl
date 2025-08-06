@@ -14,12 +14,20 @@ function res_decomp(A)
     return R, ivar
 end
 
-function update_recon_props(likelihood::CoaddLikelihood, sigma_f_method="approx")
+
+"""
+    update_recon_props(likelihood::CoaddLikelihood)
+
+Updates internal properties of the likelihood related to the reconvolved coadd: the diagonal inverse variance and the coadd PSF.
+
+# Arguments
+- `likelihood`: The accumulated coadd likelihood
+"""
+function update_recon_props(likelihood::CoaddLikelihood)
     # Updating the PSF and the associated ivar for the reconvolved coadd
     G, iv = res_decomp(likelihood.A)
     likelihood.coadd_psf = G
     likelihood.ivar = iv
-
 end
 
 function get_reconvolved_coadd(likelihood::CoaddLikelihood)
