@@ -1,14 +1,14 @@
 # include("BayesianCoaddition.jl")
 # Named this S because it actually comes from the "scaling gaussian"
 # that results when multiplying two gaussians (the prior and the likelihood)
-function log_S(likelihood::CoaddLikelihood, sigma_f)
+function log_S(likelihood::CoaddLikelihood, sigma_f::Float64)
   sigma_f_matrix = diagm(ones(length(likelihood.phi)) .* (sigma_f^-2))
   A_prior = sparse(likelihood.A .+ sigma_f_matrix)
   return -logdet(A_prior) * 0.5 - length(likelihood.phi) * log(sigma_f) + 0.5 * likelihood.phi' * (A_prior \ likelihood.phi)
 end
 
 # Used for exact root finding.
-function dlog_S(likelihood::CoaddLikelihood, sigma_f)
+function dlog_S(likelihood::CoaddLikelihood, sigma_f::Float64)
     sigma_f_matrix = diagm(ones(length(likelihood.phi)) .* (sigma_f^-2))
     A_prior = Symmetric(likelihood.A .+ sigma_f_matrix)
     f_bar = A_prior \ likelihood.phi
@@ -71,7 +71,17 @@ function exact_sigma_f(likelihood::CoaddLikelihood)
     return find_zero(g, 0.2)
 end
 
-function update_sigma_f(likelihood::CoaddLikelihood, method="approx")
+
+"""
+    update_sigma_f(likelihood::CoaddLikelihood, method::String="approx")
+
+Updates the value of ``σ_f`` used in the coadd defiend by CoaddLikelihood.
+
+# Arguments
+- `likelihood`: The accumulated coadd likelihood
+- `method`: Method used to update ``σ_f``. Choices are "approx" to use the fast approximation algorithm or "exact" to use a root finding method.
+"""
+function update_sigma_f(likelihood::CoaddLikelihood, method::String="approx")
 
     if method == "approx"
         new_sigma_f = approximate_sigma_f(likelihood)

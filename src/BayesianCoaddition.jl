@@ -8,15 +8,15 @@ export update_sigma_f
 export update_recon_props, get_reconvolved_coadd
 
 mutable struct CoaddLikelihood
-    A
-    phi
+    A::Matrix{Float64}
+    phi::Vector{Float64}
     sigma_f::Float64
-    coadd_psf
-    ivar
+    coadd_psf::Matrix{Float64}
+    ivar::Vector{Float64}
 end
 
 """
-    construct_likelihood(flux, ivar, psf_mat)
+    construct_likelihood(flux::Vector{Float64}, ivar::Vector{Float64}, psf_mat::Matrix{Float64})
 
 Construct a likelihood object from a single exposure's flux, ivar, and associated PSF.
 
@@ -28,7 +28,7 @@ wraps the entire process in a single step.
 - `ivar`: Exposure ivar as a vector.
 - `psf_mat`: Matrix of PSF function for the exposure, where each row is the PSF of the associated pixel in the flux/ivar grid.
 """
-function construct_likelihood(flux, ivar, psf_mat)
+function construct_likelihood(flux::Vector{Float64}, ivar::Vector{Float64}, psf_mat::Matrix{Float64})
     A = psf_mat * diagm(ivar) * psf_mat'
     phi = psf_mat * (flux .* ivar)
     return CoaddLikelihood(A, phi, 1, psf_mat, ivar)
@@ -60,7 +60,7 @@ function get_bayes_coadd(likelihood::CoaddLikelihood; regularize::Bool=false)
 end
 
 """
-    accumulate_exposure(likelihood::CoaddLikelihood, flux, ivar, psf_mat)
+    accumulate_exposure(likelihood::CoaddLikelihood, flux::Vector{Float64}, ivar::Vector{Float64}, psf_mat::Matrix{Float64})
 
 Add an exposure into the accumulated likelihood using the point spread function (PSF),
 exposure flux and exposure inverse variance.
@@ -71,7 +71,7 @@ exposure flux and exposure inverse variance.
 - `ivar`: Exposure ivar as a vector.
 - `psf_mat`: Matrix of PSF function for the exposure, where each row is the PSF of the associated pixel in the flux/ivar grid.
 """
-function accumulate_exposure(likelihood::CoaddLikelihood, flux, ivar, psf_mat)
+function accumulate_exposure(likelihood::CoaddLikelihood, flux::Vector{Float64}, ivar::Vector{Float64}, psf_mat::Matrix{Float64})
     likelihood.A += psf_mat * diagm(ivar) * psf_mat'
     likelihood.phi += psf_mat * (flux .* ivar)
 end

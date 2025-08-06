@@ -7,7 +7,7 @@ and a vector representing the diagonal inverse variance such that ``\\mathbf{A} 
 # Arguments
 - `A`: The inverse covariance matrix to be decomposed.
 """
-function sqrt_decomp(A)
+function sqrt_decomp(A::Matrix{Float64})
     v, P = eigen(A)
     # Generates the square root of inverse covariance matrix
     Q = P * diagm(sqrt.(v)) * transpose(P)
